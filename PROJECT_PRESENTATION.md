@@ -57,24 +57,27 @@ Predict hourly ground-level **$\text{PM}_{2.5}$** across 12 monitoring stations 
 ---
 
 <!-- SLIDE 4 -->
-# Slide 4: Target Variable ($\text{PM}_{2.5}$) Insights
+# Slide 4: Target Variable ($\text{PM}_{2.5}$) Distribution
 
-### Distribution Characteristics
+![Target PM2.5 Distribution](./eda_plots/01_pm25_distribution.png)
+
+### Key Distribution Insights
 - **Mean Concentration**: $79.25\ \mu\text{g/m}^3$ (WHO Annual guideline is $5\ \mu\text{g/m}^3$; WHO Interim Target-1 is $35\ \mu\text{g/m}^3$).
 - **Median Concentration**: $55.00\ \mu\text{g/m}^3$ (reflecting heavy right-skewness).
 - **Extreme Range**: Minimum $2.0\ \mu\text{g/m}^3$ to Maximum $999.0\ \mu\text{g/m}^3$.
 - **Smog Episodic Nature**: More than 68% of all recorded hours exceed the WHO 24-hour advisory threshold ($25\ \mu\text{g/m}^3$).
+- **Log Transformation**: $\log(1 + \text{PM}_{2.5})$ aligns into an approximate Gaussian bell curve, highlighting the multiplicative growth of aerosol particles.
 
-### Key Visualizations Generated
-- `eda_plots/01_pm25_distribution.png`: Compares raw distribution against $\log(1 + \text{PM}_{2.5})$.
-- `eda_plots/08_pm_ratio_seasonal.png`: Fine-to-coarse ratio ($\text{PM}_{2.5} / \text{PM}_{10}$).
-
-> **Speaker Note**: While median $\text{PM}_{2.5}$ is 55, during severe winter stagnation events it frequently exceeds 400. In spring, coarse dust brings the $\text{PM}_{2.5}/\text{PM}_{10}$ ratio down to 0.55, but in winter, fine combustion aerosols push this ratio up to 0.80+.
+> **Speaker Note**: Notice the pronounced right tail in the histogram. In normal conditions, $\text{PM}_{2.5}$ sits around 30 to 60. But during stagnant inversion events, it surges into the 300 to 700 range.
 
 ---
 
 <!-- SLIDE 5 -->
-# Slide 5: Multi-Pollutant & Chemical Synergy
+# Slide 5: Multi-Pollutant Correlation & Chemical Interactions
+
+![Pearson Correlation Matrix](./eda_plots/02_correlation_heatmap.png)
+
+![PM2.5 vs PM10 and CO](./eda_plots/03_pm25_vs_pm10_co.png)
 
 ### Correlation Highlights with $\text{PM}_{2.5}$
 - **$\text{PM}_{10}$ ($r = +0.88$)**: $\text{PM}_{2.5}$ is physically embedded within $\text{PM}_{10}$. Strongest single linear predictor.
@@ -82,16 +85,14 @@ Predict hourly ground-level **$\text{PM}_{2.5}$** across 12 monitoring stations 
 - **$\text{NO}_2$ ($r = +0.66$) & $\text{SO}_2$ ($r = +0.48$)**: Precursors that oxidize in the atmosphere to form secondary sulfate and nitrate fine particulates.
 - **$\text{O}_3$ ($r = -0.14$)**: Inversely correlated in winter due to titration with nitric oxide ($\text{NO} + \text{O}_3 \rightarrow \text{NO}_2 + \text{O}_2$) and weak photochemistry.
 
-### Key Visualizations Generated
-- `eda_plots/02_correlation_heatmap.png`: Full Pearson correlation triangular heatmap.
-- `eda_plots/03_pm25_vs_pm10_co.png`: Hexbin density maps showing the 1:1 boundary with $\text{PM}_{10}$ and linear relationship with $\text{CO}$.
-
 > **Speaker Note**: Notice the synergy between $\text{PM}_{10}$ and $\text{CO}$. If $\text{PM}_{10}$ is high but $\text{CO}$ is low, it indicates coarse desert dust. If both are high, it indicates extreme coal/combustion winter smog. This insight informed our non-linear ratio features.
 
 ---
 
 <!-- SLIDE 6 -->
 # Slide 6: Meteorological & Aerodynamic Mechanisms
+
+![Wind Effects and Dispersal](./eda_plots/06_wind_effects.png)
 
 ### 1. Wind Direction ("Pollution Rose")
 - **Southerly Winds (S, SSW, SSE)**: Carry warm, humid, heavily polluted industrial plumes from the southern Hebei industrial corridor, damming against the northern mountains &rarr; **Highest $\text{PM}_{2.5}$ ($> 100\ \mu\text{g/m}^3$)**.
@@ -101,15 +102,16 @@ Predict hourly ground-level **$\text{PM}_{2.5}$** across 12 monitoring stations 
 - **Stagnation Threshold**: Wind speeds $< 1.5\ \text{m/s}$ lead to exponential particulate accumulation.
 - **Clearing Velocity**: Wind speeds $> 4.0\ \text{m/s}$ reliably dilute and purge the Beijing basin.
 
-### Key Visualizations Generated
-- `eda_plots/06_wind_effects.png`: Compass rose bar chart and wind speed vs. $\text{PM}_{2.5}$ dispersal curve.
-
 > **Speaker Note**: The geography of Beijing forms a semi-basin surrounded by mountains on the west and north. Southerly winds trap pollutants in the basin; northerly winds blow them out.
 
 ---
 
 <!-- SLIDE 7 -->
-# Slide 7: Temporal Cycles & Spatial Gradients
+# Slide 7: Temporal Cycles & Spatial Variations
+
+![Temporal Trends](./eda_plots/04_temporal_trends.png)
+
+![Station Distribution](./eda_plots/05_station_distribution.png)
 
 ### Temporal Cycles
 - **Diurnal (Hourly) Rhythm**:
@@ -122,17 +124,28 @@ Predict hourly ground-level **$\text{PM}_{2.5}$** across 12 monitoring stations 
 - **Cleanest Stations**: Dingling (median 44.0) and Huairou (median 47.0) near northern reservoirs.
 - **Most Polluted Stations**: Gucheng (industrial west) and Wanshouxigong / Dongsi (urban core, median > 60).
 
-### Key Visualizations Generated
-- `eda_plots/04_temporal_trends.png`: Hourly diurnal curve and monthly seasonal curve.
-- `eda_plots/05_station_distribution.png`: Station boxplots ordered by median concentration.
-- `eda_plots/07_yearly_trends.png`: Yearly trends demonstrating policy impacts.
-
 > **Speaker Note**: Because the test dataset is in January and February 2017, it falls entirely within Beijing's heating season. This made seasonal modeling essential.
 
 ---
 
 <!-- SLIDE 8 -->
-# Slide 8: Domain-Specific Feature Engineering (101 Features)
+# Slide 8: Fine-to-Coarse Particulate Ratio & Yearly Trends
+
+![PM Ratio Seasonal](./eda_plots/08_pm_ratio_seasonal.png)
+
+![Yearly Trends Across Months](./eda_plots/07_yearly_trends.png)
+
+### Chemical Insights
+- **Seasonal Ratio Shift**:
+  - **Winter**: Median $\text{PM}_{2.5} / \text{PM}_{10} \approx 0.80$, reflecting fine combustion aerosols.
+  - **Spring**: Drops to $\approx 0.55$, reflecting regional mineral dust blowing from arid deserts.
+- **Multi-Year Environmental Progress**:
+  - Noticeable reduction in summer baseline levels from 2013 to 2016 due to industrial emission caps and coal-to-gas transition under Beijing's Clean Air Action Plan.
+
+---
+
+<!-- SLIDE 9 -->
+# Slide 9: Domain-Specific Feature Engineering (101 Features)
 
 We engineered **101 domain-specific features** categorized into 5 physical domains:
 
@@ -168,8 +181,10 @@ We engineered **101 domain-specific features** categorized into 5 physical domai
 
 ---
 
-<!-- SLIDE 9 -->
-# Slide 9: Model Benchmarking & Performance Comparison
+<!-- SLIDE 10 -->
+# Slide 10: Model Benchmarking & Performance Comparison
+
+![Model Benchmark Comparison](./model_plots/01_model_benchmark_comparison.png)
 
 ### Validation Strategy: Out-of-Time Holdout (Full Year 2016)
 To prevent temporal data leakage and replicate the 2017 test conditions, all models were trained on 2013–2015 data and evaluated on the out-of-time 2016 dataset (103,151 samples).
@@ -186,33 +201,33 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 - **Tree-Based Superiority**: Non-linear tree ensembles reduce RMSE by **5.27 $\mu\text{g/m}^3$ (23.3%)** over regularized linear regression.
 - **Ensemble Gain**: Combining LightGBM and XGBoost diversifies structural tree splits, achieving the lowest overall error (**17.37 $\mu\text{g/m}^3$**) and explaining **94.73% of total variance**.
 
-### Key Visualizations Generated
-- `model_plots/01_model_benchmark_comparison.png`: Horizontal bar chart benchmarking all 5 models.
-
 > **Speaker Note**: Our blended ensemble achieved an $R^2$ of 0.9473. On a highly volatile environmental metric like particulate matter, explaining 94.7% of variance is considered state-of-the-art.
 
 ---
 
-<!-- SLIDE 10 -->
-# Slide 10: Model Interpretability & Feature Importance
+<!-- SLIDE 11 -->
+# Slide 11: Feature Importance & Interpretability
 
-### Top 10 Most Influential Features (LightGBM Gain)
+![Top Feature Importances](./model_plots/02_feature_importance.png)
+
+### Top Influential Features (LightGBM Gain)
 1. **`PM10` & `PM10_roll_mean_3`**: Primary mass anchor; fine particles scale closely with total particulate mass.
 2. **`CO` & `CO_roll_mean_6`**: Direct combustion fingerprint; differentiates clean dust from toxic combustion smog.
 3. **`reg_mean_PM10` & `reg_mean_CO`**: Captures regional synoptic weather fronts moving across Northern China.
-4. **`RH` & `dew_depression`**: Regulates secondary hygroscopic particle growth and fog/haze chemistry.
+4. **`RH` & `dew_depression`**: Regulates secondary aerosol formation and moisture-induced particulate swelling.
 5. **`WSPM_roll_mean_24` & `u_wind`**: Macro ventilation index over the preceding day.
 6. **`total_oxidant` ($\text{O}_x = \text{O}_3 + \text{NO}_2$)**: Atmospheric oxidation potential.
-
-### Key Visualizations Generated
-- `model_plots/02_feature_importance.png`: Top 25 feature importance gain ranking.
 
 > **Speaker Note**: The model did not rely solely on instantaneous values. Rolling 3-hour and 6-hour moving averages and regional city-wide levels were ranked higher than raw temperature or pressure.
 
 ---
 
-<!-- SLIDE 11 -->
-# Slide 11: Error Diagnostics & Station-Level Reliability
+<!-- SLIDE 12 -->
+# Slide 12: Residual Diagnostics & Station-Level Reliability
+
+![Actual vs Predicted and Residuals](./model_plots/03_actual_vs_predicted_residuals.png)
+
+![Station RMSE Breakdown](./model_plots/04_station_rmse_breakdown.png)
 
 ### Residual Diagnostics
 - **Symmetric Centering**: Residuals ($\hat{y} - y$) are centered at $+0.13\ \mu\text{g/m}^3$, confirming zero systematic bias.
@@ -223,16 +238,14 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 - **Moderate Error**: Tiantan ($16.8\ \mu\text{g/m}^3$), Aotizhongxin ($17.1\ \mu\text{g/m}^3$), Shunyi ($17.3\ \mu\text{g/m}^3$).
 - **Higher Error**: Wanshouxigong ($19.4\ \mu\text{g/m}^3$) and Gucheng ($19.1\ \mu\text{g/m}^3$) &rarr; Intense urban road networks and heavy legacy industrial sources.
 
-### Key Visualizations Generated
-- `model_plots/03_actual_vs_predicted_residuals.png`: Dual-panel hexbin scatter and residual histogram.
-- `model_plots/04_station_rmse_breakdown.png`: Bar chart of RMSE across all 12 stations.
-
 > **Speaker Note**: The model is resilient across all 12 stations. Even in the most volatile urban stations like Gucheng, RMSE remains under 20 $\mu\text{g/m}^3$.
 
 ---
 
-<!-- SLIDE 12 -->
-# Slide 12: Final Production Model & Test Deliverables
+<!-- SLIDE 13 -->
+# Slide 13: Final Production Model & Test Deliverables
+
+![Test Predictions Timeseries](./model_plots/05_test_predictions_timeseries.png)
 
 ### Production Training Strategy
 - Models retrained on **100% of historical data** (March 2013 – December 2016, 395,301 valid rows) using optimal weights (0.55 LightGBM + 0.45 XGBoost).
@@ -251,25 +264,8 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 - `submission.csv`: Standard headerless CSV matching the competition format.
 - `submission_with_header.csv`: Labeled CSV format (`REF_NO, PM2.5`).
 - `submission.xlsx`: Excel workbook format.
-- `model_plots/05_test_predictions_timeseries.png`: Prediction timeline for test period.
 
 > **Speaker Note**: The test predictions exhibit the exact episodic wave characteristics of Beijing winter smog: sharp spikes during multi-day stagnant inversions, followed by rapid clearing as northerly cold fronts arrive.
-
----
-
-<!-- SLIDE 13 -->
-# Slide 13: Environmental Impact & Practical Application
-
-### Operational Real-World Deployment
-1. **Public Health Early Warnings**: Enables municipal health authorities to issue school closure and outdoor activity advisories 24 hours in advance.
-2. **Dynamic Traffic & Industrial Routing**: Can guide emergency industrial curtailment and vehicle odd-even restrictions when stagnation thresholds are detected.
-3. **Sensor Quality Control & Imputation**: The high correlation and ensemble structure allows detection of faulty physical sensors when recorded $\text{PM}_{2.5}$ deviates by $> 3\sigma$ from predictions.
-
-### Key Takeaways
-- **Physics + ML Synergy**: Combining atmospheric domain physics (relative humidity, wind vectors, combustion ratios) with gradient boosting yielded a 23.3% performance boost over baselines.
-- **Robust Generalization**: Rigorous out-of-time validation ensured zero temporal leakage, proving model reliability for operational forecasting.
-
-> **Speaker Note**: By integrating atmospheric physics into machine learning, we built an accurate, explainable system ready for municipal environmental monitoring.
 
 ---
 
