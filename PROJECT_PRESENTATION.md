@@ -182,7 +182,52 @@ We engineered **101 domain-specific features** categorized into 5 physical domai
 ---
 
 <!-- SLIDE 10 -->
-# Slide 10: Model Benchmarking & Performance Comparison
+# Slide 10: Model Methodology — III.I. Linear Regression Baseline
+
+![Linear Regression Architecture & Workflow](./model_plots/linear_regression_workflow.png)
+
+![Linear Regression Comprehensive Diagnostic](./model_plots/linear_regression_comprehensive.png)
+
+### Theoretical Formulation
+Linear regression models the relationship between the scalar response variable $\text{PM}_{2.5}$ and explanatory predictor variables by fitting an optimal hyperplane in $n$ dimensions:
+
+$$Y_i = \alpha + \beta_1 x_i^{(1)} + \beta_2 x_i^{(2)} + \dots + \beta_n x_i^{(n)}$$
+
+Where:
+- $Y_i$: Estimated value of the $i$-th component of the dependent target ($\text{PM}_{2.5}$)
+- $\alpha$: Intercept parameter (bias term)
+- $\beta_1, \beta_2, \dots, \beta_n$: Learned feature coefficients
+- $x_i^{(1)}, x_i^{(2)}, \dots, x_i^{(n)}$: The $n$ independent variables ($\text{CO}, \text{NO}_2, \text{O}_3, \text{PM}_{10}, \text{SO}_2$, and weather parameters)
+
+### Primary Pollutant Linear Regression Fit Lines
+![Linear Regression Co-Pollutant Fits](./model_plots/linear_regression_fit.png)
+
+### Optimization via Gradient Descent
+The model minimizes total prediction error by optimizing parameters using Gradient Descent:
+$$\theta_j := \theta_j - \eta \frac{\partial J(\theta)}{\partial \theta_j}$$
+
+- **Loss Function (Mean Squared Error)**:
+  $$J(\alpha, \boldsymbol{\beta}) = \frac{1}{2m} \sum_{i=1}^m \left( Y_i - \left( \alpha + \sum_{j=1}^n \beta_j x_i^{(j)} \right) \right)^2$$
+- **Parameter Updates**: Gradient descent partially derives the loss function with respect to each parameter; parameters update by subtracting previous values with the derivative multiplied by learning rate $\eta$.
+- **Learning Rate Tuning**: Tuned through validation search / trial-and-error to ensure stable, monotonic convergence without oscillation (Panel D above).
+- **Regularization (Ridge)**: Incorporates an $L_2$ penalty ($\lambda \|\boldsymbol{\beta}\|_2^2$) to mitigate collinearity among correlated gaseous pollutants ($\text{CO}$ and $\text{NO}_2$).
+
+```mermaid
+flowchart TD
+    subgraph Pipeline ["End-to-End Processing"]
+        P["Pollutants (CO, NO2, O3, PM10, SO2)"] --> DP["Data Processing"]
+        DP --> TR["Training"]
+        TR --> TE["Testing"]
+        TE --> PR["Predicted PM2.5 / AQI"]
+    end
+```
+
+> **Speaker Note**: In the 4-panel graph, Panel A shows the actual vs. predicted linear fit line, Panel B illustrates the strong linear scaling between $\text{PM}_{10}$ and $\text{PM}_{2.5}$, Panel C ranks the learned $\beta_j$ weights (with $\text{PM}_{10}$ and $\text{CO}$ dominating positive contributions), and Panel D illustrates the monotonic convergence of loss $J(\theta)$ during gradient descent.
+
+---
+
+<!-- SLIDE 11 -->
+# Slide 11: Model Benchmarking & Performance Comparison
 
 ![Model Benchmark Comparison](./model_plots/01_model_benchmark_comparison.png)
 
@@ -201,12 +246,12 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 - **Tree-Based Superiority**: Non-linear tree ensembles reduce RMSE by **5.27 $\mu\text{g/m}^3$ (23.3%)** over regularized linear regression.
 - **Ensemble Gain**: Combining LightGBM and XGBoost diversifies structural tree splits, achieving the lowest overall error (**17.37 $\mu\text{g/m}^3$**) and explaining **94.73% of total variance**.
 
-> **Speaker Note**: Our blended ensemble achieved an $R^2$ of 0.9473. On a highly volatile environmental metric like particulate matter, explaining 94.7% of variance is considered state-of-the-art.
+> **Speaker Note**: Notice that Linear Regression achieves a strong baseline $R^2$ of 0.9106 and RMSE of 22.64. However, gradient boosted trees reduce RMSE down to 17.37, explaining nearly 95% of target variance.
 
 ---
 
-<!-- SLIDE 11 -->
-# Slide 11: Feature Importance & Interpretability
+<!-- SLIDE 12 -->
+# Slide 12: Feature Importance & Interpretability
 
 ![Top Feature Importances](./model_plots/02_feature_importance.png)
 
@@ -222,8 +267,8 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 
 ---
 
-<!-- SLIDE 12 -->
-# Slide 12: Residual Diagnostics & Station-Level Reliability
+<!-- SLIDE 13 -->
+# Slide 13: Residual Diagnostics & Station-Level Reliability
 
 ![Actual vs Predicted and Residuals](./model_plots/03_actual_vs_predicted_residuals.png)
 
@@ -242,8 +287,8 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 
 ---
 
-<!-- SLIDE 13 -->
-# Slide 13: Final Production Model & Test Deliverables
+<!-- SLIDE 14 -->
+# Slide 14: Final Production Model & Test Deliverables
 
 ![Test Predictions Timeseries](./model_plots/05_test_predictions_timeseries.png)
 
@@ -269,8 +314,8 @@ To prevent temporal data leakage and replicate the 2017 test conditions, all mod
 
 ---
 
-<!-- SLIDE 14 -->
-# Slide 14: Q&A & Thank You
+<!-- SLIDE 15 -->
+# Slide 15: Q&A & Thank You
 ### Group-3: Beijing Air Pollution Prediction
 **Final Summary**:
 - **Dataset**: 2013–2017 across 12 Beijing Monitoring Stations

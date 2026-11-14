@@ -141,11 +141,62 @@ A total of **101 domain-engineered features** were designed to supply the tree a
 
 ---
 
-## 5. Model Benchmarking & Performance Comparison
+## 5. Model Architecture, Benchmarking & Performance Comparison
+
+### 5.1 III.I. Linear Regression Methodology
+
+Linear regression is a method of fitting independent variables with dependent variables into a hyperplane in $n$ dimensions, where $n$ is the total number of features or variables within our data. The model minimizes the total error while trying to fit all the data points in one line and learning continuously by optimizing parameters.
+
+#### Diagnostic Visualizations & Fit Analysis
+
+![Linear Regression Architecture & Workflow](./model_plots/linear_regression_workflow.png)
+
+![Linear Regression Comprehensive Diagnostic](./model_plots/linear_regression_comprehensive.png)
+
+![Linear Regression Primary Pollutant Fits](./model_plots/linear_regression_fit.png)
+
+- **Panel A (Actual vs. Predicted Fit)**: The multivariate linear regression fits an optimal hyperplane across all input dimensions, achieving $R^2 = 0.8807$ on raw predictors and $R^2 = 0.9106$ with engineered features.
+- **Panel B (Primary Pollutant Scaling)**: Displays the regression line of $\text{PM}_{2.5}$ against $\text{PM}_{10}$ ($Y_i = \alpha + \beta_1 \cdot \text{PM}_{10}$), exhibiting strong linear correlation ($r = +0.88$).
+- **Panel C (Learned $\beta_j$ Coefficients)**: Compares the relative impact weights of each standardized pollutant, where $\text{PM}_{10}$ and $\text{CO}$ dominate positive coefficient weights.
+- **Panel D (Gradient Descent Convergence)**: Shows the monotonic descent of the MSE cost function $J(\theta)$ across training iterations, demonstrating steady parameter convergence.
+
+#### Mathematical Equation
+The equation of multivariate linear regression is given by:
+
+$$Y_i = \alpha + \beta_1 x_i^{(1)} + \beta_2 x_i^{(2)} + \dots + \beta_n x_i^{(n)}$$
+
+Where:
+- $Y_i$: Estimate of the $i$-th component of the dependent target variable ($\text{PM}_{2.5}$)
+- $\alpha$: Intercept / bias parameter
+- $\beta_1, \beta_2, \dots, \beta_n$: Learned regression coefficients
+- $x_i^{(1)}, x_i^{(2)}, \dots, x_i^{(n)}$: The $n$ independent variables ($\text{CO}, \text{NO}_2, \text{O}_3, \text{PM}_{10}, \text{SO}_2$, and meteorological parameters)
+
+#### Optimization via Gradient Descent
+Optimization is carried out using **Gradient Descent**. Gradient descent partially derives the loss function (Mean Squared Error) with respect to each parameter, and all parameters are updated iteratively by subtracting the previous value with the derivative times the learning rate $\eta$:
+
+$$\theta_j := \theta_j - \eta \frac{\partial J(\theta)}{\partial \theta_j}$$
+
+Where the Mean Squared Error loss function is:
+$$J(\alpha, \boldsymbol{\beta}) = \frac{1}{2m} \sum_{i=1}^m \left( Y_i - \left( \alpha + \sum_{j=1}^n \beta_j x_i^{(j)} \right) \right)^2$$
+
+The learning rate is tuned by the trial and error / cross-validation method to prevent divergence while ensuring fast convergence. In our benchmark, an $L_2$ regularized penalty (Ridge Regression, $\alpha=100$) was applied to suppress multicollinearity across correlated pollutants ($\text{CO}$, $\text{NO}_2$, and $\text{PM}_{10}$).
+
+#### End-to-End Workflow Pipeline
+```mermaid
+flowchart TD
+    subgraph DataFlow ["End-to-End Processing"]
+        P["Pollutants (CO, NO2, O3, PM10, SO2)"] --> DP["Data Processing"]
+        DP --> TR["Training"]
+        TR --> TE["Testing"]
+        TE --> PR["Predicted AQI / PM2.5"]
+    end
+```
+
+---
+
+### 5.2 Benchmark Comparison Table
 
 To ensure the best possible model, multiple model families were systematically evaluated on a strict **out-of-time holdout validation set (the full year of 2016)** to avoid temporal leakage and replicate the 2017 test conditions.
-
-### 5.1 Benchmark Comparison Table
 
 | Model | Architecture Details | Validation RMSE ($\mu\text{g/m}^3$) | Validation MAE ($\mu\text{g/m}^3$) | $R^2$ Score |
 | :--- | :--- | :---: | :---: | :---: |
